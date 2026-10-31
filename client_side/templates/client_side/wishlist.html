@@ -1,0 +1,52 @@
+{% extends "client_side/home.html" %}
+
+{% block title %}Wishlist{% endblock %}
+
+{% block content %}
+<div class="container page">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'client_home' %}">Shop</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Wishlist</li>
+    </ol>
+  </nav>
+
+  <h1 class="page-title">Your wishlist</h1>
+
+  {% if items %}
+    <div class="product-grid">
+      {% for item in items %}
+        <div class="product-card">
+          {% if item.product.image %}
+            <img class="related-image" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          {% else %}
+            <div class="related-image product-placeholder">m.</div>
+          {% endif %}
+
+          <div class="card-info">
+            <h3 class="product-name">
+              <a href="{% url 'product_detail' item.product.slug %}">{{ item.product.name }}</a>
+            </h3>
+            <span class="price">₹{{ item.product.price }}</span>
+            {% if item.product.stock == 0 %}
+              <span class="tag tag-dark">Sold out</span>
+            {% endif %}
+
+            <form method="post" action="{% url 'wishlist_remove' item.id %}" class="mt-2">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i> Remove
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="mt-4">Your wishlist is empty.</p>
+    <a href="{% url 'client_home' %}" class="btn btn-store">Start shopping</a>
+  {% endif %}
+
+</div>
+{% endblock %}

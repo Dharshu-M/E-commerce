@@ -1,0 +1,88 @@
+
+body.bg-light {
+    background-color: #f1f5f9 !important;
+}
+
+.site-header {
+    background-color: #1e293b;
+    color: #fff;
+}
+
+.site-header h4,
+.site-header .bi {
+    color: inherit;
+}
+
+#mainNav.offcanvas,
+#mainNav.offcanvas.show {
+    --bs-offcanvas-bg: #1e293b;
+    background: #1e293b !important;
+    color: #fff;
+}
+
+#mainNav .nav-link,
+#mainNav .offcanvas-title,
+#mainNav .bi {
+    color: #fff !important;
+}
+
+.icon {
+    color: #1e293b;
+    font-size: 1.1em;
+    vertical-align: -0.1em;
+}
+
+
+.new-cat {
+    color: #1e293b;
+    border-color: #1e293b !important;
+}
+
+.new-cat:hover {
+    background: #1e293b;
+    color: #fff;
+}
+
+.new-cat:hover .icon {
+    color: #fff;
+}
+
+
+.site-header {
+    background-color: #1E293B;
+}
+
+
+.card {
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1E293B;
+}
+
+
+.form-label {
+    font-weight: 500;
+    color: #1E293B;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #1e293b;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+}
+
+
+.btn-success {
+    background-color: #1e293b;
+    border-color: #1e293b;
+}
+
+.btn-success:hover {
+    background-color: #537df0;
+    border-color: #1D4ED8;
+}

@@ -1,0 +1,261 @@
+{% extends "client_side/home.html" %}
+
+{% block title %}{{ product.name }} | My Store{% endblock %}
+
+{% block content %}
+<style>
+  .detail-image { position: relative ; }
+
+  .detail-image .wish-btn {
+    position: absolute ;
+    top: 14px ;
+    right: 14px ;
+    z-index: 10 ;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+    display: flex ;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .detail-image .wish-btn .bi-heart-fill { color: #e0245e; }
+</style>
+<div class="container page">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'client_home' %}">Shop</a></li>
+      <li class="breadcrumb-item">{{ product.category.name }}</li>
+      <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="detail-grid">
+
+    <div class="detail-image">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+      {% else %}
+        <div class="product-placeholder">m.</div>
+      {% endif %}
+
+      {% if product.stock == 0 %}
+        <span class="tag tag-dark">Sold out</span>
+      {% elif product.trending %}
+        <span class="tag tag-green">Trending</span>
+      {% endif %}
+      <button class="wish-btn" type="button" id="wishBtn" onclick="toggleWishlist()" aria-label="Add to wishlist">
+    <i class="bi {% if in_wishlist %}bi-heart-fill{% else %}bi-heart{% endif %}" id="wishIcon"></i>
+  </button>
+    </div>
+
+    <div class="detail-panel">
+      <p class="eyebrow">{{ product.category.name }}</p>
+      <h1 class="page-title">{{ product.name }}</h1>
+
+      <p class="detail-price">
+        ₹{{ product.price }}
+        {% if product.org_price > product.price %}<del>₹{{ product.org_price }}</del>{% endif %}
+      </p>
+
+      {% if product.vendor %}
+        <p class="vendor">Sold by {{ product.vendor }}</p>
+      {% endif %}
+
+      {% if product.description %}
+        <p class="detail-text">{{ product.description|linebreaksbr }}</p>
+      {% endif %}
+
+      <hr>
+
+      <input type="hidden" value="{{ product.id }}" id="pid">
+
+      {% if product.stock == 0 %}
+        <p class="stock">Sold out</p>
+        <button class="btn btn-store btn-wide" type="button" disabled>Currently unavailable</button>
+
+        <div class="actions mt-2">
+          <button class="btn btn-outline-dark btn-wide" type="button" onclick="toggleWishlist()">
+            <i class="bi {% if in_wishlist %}bi-heart-fill{% else %}bi-heart{% endif %}" id="wishIcon"></i> Wishlist
+          </button>
+        </div>
+      {% else %}
+        <p class="stock">
+          {% if product.stock <= 5 %}
+            <i class="bi bi-exclamation-circle"></i> Only {{ product.stock }} left
+          {% else %}
+            <i class="bi bi-check-circle"></i> In stock
+          {% endif %}
+        </p>
+
+        <label class="eyebrow qty-label" for="qty">Quantity</label>
+        <div class="qty-box">
+          <button type="button" aria-label="Decrease" onclick="minus()">-</button>
+          <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly>
+          <button type="button" aria-label="Increase" onclick="plus()">+</button>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-store btn-wide" type="button" id="addToCart" onclick="addTocart(true)">
+            <i class="bi bi-cart-plus"></i> Add to cart
+          </button>
+          <button class="btn btn-dark-store btn-wide" type="button" id="buyNow" onclick="buy(true)">
+            <i class="bi bi-lightning-charge"></i> Buy now
+          </button>
+          
+        </div>
+
+        <ul class="perks">
+          <li><i class="bi bi-truck"></i>Fast delivery</li>
+          <li><i class="bi bi-arrow-repeat"></i>Easy returns</li>
+          <li><i class="bi bi-shield-check"></i>Secure payment</li>
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related_products %}
+    <section class="related">
+      <h2>You may also like</h2>
+      <div class="product-grid compact">
+        {% for item in related_products %}
+          <div class="product-card">
+            {% if item.image %}
+              <img class="related-image" src="{{ item.image.url }}" alt="{{ item.name }}">
+            {% else %}
+              <div class="related-image product-placeholder">m.</div>
+            {% endif %}
+            <div class="card-info">
+              <h3 class="product-name"><a class="stretch" href="{% url 'product_detail' item.slug %}">{{ item.name }}</a></h3>
+              <span class="price">₹{{ item.price }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const qty = document.getElementById('qty');
+  const pid = document.getElementById('pid');
+  const tkn = "{{ csrf_token }}";
+
+  function plus() {
+    if ( +qty.value < +qty.max) qty.value++;
+  }
+
+  function minus() {
+    if ( +qty.value > 1) qty.value--;
+  }
+
+  function addTocart(goToCart) {
+    let q = parseInt(qty.value, 10);
+    q = isNaN(q) ? 0 : q;
+
+    if (q > 0) {
+      let postObj = {
+        product_qty: q,
+        pid: pid.value,
+        token: tkn
+      };
+
+      fetch("{% url 'add_to_cart' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": tkn,
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify(postObj)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          if (goToCart) {
+            window.location.href = "{% url 'cart_detail' %}";
+          } else {
+            alert("Added to cart");
+          }
+        } else {
+          alert(data.status);
+        }
+      })
+      .catch(() => alert("Something went wrong. Please try again."));
+    } else {
+      alert("Please Enter The Quantity");
+    }
+  }
+
+  function toggleWishlist() {
+    fetch("{% url 'toggle_wishlist' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": tkn,
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: JSON.stringify({ pid: pid.value })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const icon = document.getElementById("wishIcon");
+      if (data.status === "added") {
+        icon.className = "bi bi-heart-fill";
+      } else if (data.status === "removed") {
+        icon.className = "bi bi-heart";
+      } else {
+        alert(data.status);
+      }
+    })
+    .catch(() => alert("Something went wrong. Please try again."));
+  }
+  
+function buy(gotoorder) {
+    let q = parseInt(qty.value, 10);
+    q = isNaN(q) ? 0 : q;
+
+    if (q <= 0) {
+        alert("Please Enter The Quantity");
+        return;
+    }
+
+    let postObj = {
+        product_qty: q,
+        pid: pid.value,
+        token: tkn
+    };
+
+    fetch("{% url 'add_to_cart' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": tkn,
+            "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify(postObj)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            window.location.href = "{% url 'checkout' %}";
+        } else {
+            alert(data.status);
+        }
+    })
+    .catch(() => {
+        alert("Something went wrong. Please try again.");
+    });
+}
+</script>
+{% endblock %}

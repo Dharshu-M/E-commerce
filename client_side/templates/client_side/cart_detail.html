@@ -1,0 +1,84 @@
+{% extends "client_side/home.html" %}
+
+{% block title %}Your cart {% endblock %}
+
+{% block content %}
+<div class="container page">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'client_home' %}">Shop</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Cart</li>
+    </ol>
+  </nav>
+
+  <h1 class="page-title">Your cart</h1>
+
+  {% if items %}
+    <div class="table-res">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th style="width:160px">Quantity</th>
+            <th>Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>
+              <a href="{% url 'product_detail' item.product.slug %}" class="d-flex align-items-center gap-3 text-decoration-none text-dark">
+                {% if item.product.image %}
+                  <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="64" height="64" style="object-fit:cover;border-radius:8px">
+                {% else %}
+                  <div class="product-placeholder" style="width:64px;height:64px">m.</div>
+                {% endif %}
+                <span>{{ item.product.name }}</span>
+              </a>
+            </td>
+
+            <td>₹{{ item.product.price }}</td>
+
+            <td>
+              <form method="post" action="{% url 'cart_update' item.id %}" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="number" name="quantity" value="{{ item.quantity }}"
+                       min="1" max="{{ item.product.stock }}" class="form-control form-control-sm">
+                <button type="submit" class="btn btn-sm btn-store">Update</button>
+              </form>
+            </td>
+
+            <td>₹{{ item.subtotal }}</td>
+
+            <td>
+              <form method="post" action="{% url 'cart_remove' item.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Remove {{ item.product.name }}">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <a href="{% url 'client_home' %}" class="btn btn-outline-dark">Continue shopping</a>
+      <div class="text-end">
+        <p class="mb-2 fs-5">Total: <strong>₹{{ total }}</strong></p>
+        <a href="{% url 'checkout' %}" class="btn btn-dark-store">Proceed to checkout</a>
+      </div>
+    </div>
+
+  {% else %}
+    <p class="mt-4">Your cart is empty.</p>
+    <a href="{% url 'client_home' %}" class="btn btn-store">Start shopping</a>
+  {% endif %}
+
+</div>
+{% endblock %}

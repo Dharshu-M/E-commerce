@@ -1,0 +1,61 @@
+{% extends "client_side/home.html" %}
+
+{% block title %}My orders | My Store{% endblock %}
+
+{% block content %}
+<div class="container page">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'client_home' %}">Shop</a></li>
+      <li class="breadcrumb-item active" aria-current="page">My orders</li>
+    </ol>
+  </nav>
+
+  <h1 class="page-title">My orders</h1>
+
+  {% if orders %}
+    <div class="d-grid gap-3">
+      {% for order in orders %}
+        <div class="p-3 bg-white rounded-4">
+
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+            <div>
+              <p class="eyebrow mb-1">Order #{{ order.id }}</p>
+              <small class="text-muted-store">{{ order.created_at|date:"d M Y, h:i A" }}</small>
+            </div>
+
+            <span class="badge
+              {% if order.status == 'Delivered' %}bg-success
+              {% elif order.status == 'Cancelled' %}bg-danger
+              {% elif order.status == 'Shipped' %}bg-info
+               
+              {% else %}bg-warning text-dark{% endif %}">
+              {{ order.status }}
+            </span>
+          </div>
+
+          {% for item in order.items.all %}
+            <div class="d-flex justify-content-between">
+              <span>{{ item.name }} × {{ item.quantity }}</span>
+              <span>₹{{ item.subtotal }}</span>
+            </div>
+          {% endfor %}
+
+          <hr>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>Total: ₹{{ order.total }}</strong>
+            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-store">View details</a>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="mt-4">You haven't placed any orders yet.</p>
+    <a href="{% url 'client_home' %}" class="btn btn-store">Start shopping</a>
+  {% endif %}
+
+</div>
+{% endblock %}

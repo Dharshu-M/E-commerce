@@ -1,0 +1,22 @@
+{% extends "client_side/home.html" %}
+
+{% block title %}Order placed | My Store{% endblock %}
+
+{% block content %}
+<div class="container page text-center">
+  <i class="bi bi-check-circle" style="font-size:4rem;color:green"></i>
+  <h1 class="page-title">Order placed!</h1>
+  <p>Your order number is <strong>#{{ order.id }}</strong>.</p>
+  <p>Total to pay on delivery: <strong>₹{{ order.total }}</strong></p>
+
+  <div class="text-start d-inline-block mt-3">
+    {% for item in order.items.all %}
+      <p class="mb-1">{{ item.name }} * {{ item.quantity }} - ₹{{ item.subtotal }}</p>
+    {% endfor %}
+  </div>
+
+  <div class="mt-4">
+    <a href="{% url 'my_orders' %}" class="btn btn-store">View My Orders</a>
+  </div>
+</div>
+{% endblock %}
