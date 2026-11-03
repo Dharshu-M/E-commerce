@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User,auth
+from django.contrib.auth.models import User
+from django.contrib import auth
 from django.contrib import messages
 
 # Create your views here.
@@ -29,21 +30,22 @@ def register(request):
             )
             messages.success(request, 'Your account has been created.')
             user.save()
-            return redirect('register')
+            return redirect('login')
 
     return render(request, 'credential/register.html')
 
 def login(request):
     if request.method == "POST":
-        username=request.POST["username"]
-        password=request.POST["password"]
-        
-        user=auth.authenticate(username=username,password=password)
-        
-        if user is not None: 
-            auth.login(request,user)
-            return redirect("/")
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+
+        user = auth.authenticate(username=username, password=password)
+
+        if user is not None:
+            auth.login(request, user)
+            return redirect("client_home")
         else:
-            messages.info(request,"invalid credential")
-    else:
-        return render(request,'credential/login.html')
+            messages.error(request, "Invalid username or password.")
+            return redirect("login")
+
+    return render(request, "credential/login.html")

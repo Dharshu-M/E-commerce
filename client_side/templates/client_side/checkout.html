@@ -3,6 +3,39 @@
 {% block title %}Checkout | My Store{% endblock %}
 
 {% block content %}
+<style>
+  .field {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .field .error {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: #dc3545;
+  }
+
+  .field.has-error .form-control {
+    border-color: #dc3545;
+  }
+
+  .field.has-error .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.2);
+  }
+
+  .field.has-success .form-control {
+    border-color: #28a745;
+  }
+
+  .field.has-success .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.2);
+  }
+</style>
+
 <div class="container page">
 
   <nav aria-label="breadcrumb">
@@ -21,38 +54,53 @@
   <div class="row g-4">
 
     <div class="col-md-7">
-      <form method="post">
+      <form method="post" id="form" novalidate>
         {% csrf_token %}
 
         <div class="mb-3">
           <label class="form-label" for="full_name">Full name</label>
-          <input class="form-control" id="full_name" name="full_name" value="{{ form.full_name }}" required>
+          <div class="field">
+            <input class="form-control" id="full_name" name="full_name" value="{{ form.full_name }}" required>
+            <div class="error"></div>
+          </div>
         </div>
 
         <div class="mb-3">
           <label class="form-label" for="phone">Phone</label>
-          <input class="form-control" id="phone" name="phone" value="{{ form.phone }}" required>
+          <div class="field">
+            <input class="form-control" id="phone" name="phone" type="tel" value="{{ form.phone }}" required>
+            <div class="error"></div>
+          </div>
         </div>
 
         <div class="mb-3">
           <label class="form-label" for="address">Address</label>
-          <textarea class="form-control" id="address" name="address" rows="3" required>{{ form.address }}</textarea>
+          <div class="field">
+            <textarea class="form-control" id="address" name="address" rows="3" required>{{ form.address }}</textarea>
+            <div class="error"></div>
+          </div>
         </div>
 
         <div class="row">
           <div class="col-6 mb-3">
             <label class="form-label" for="city">City</label>
-            <input class="form-control" id="city" name="city" value="{{ form.city }}" required>
+            <div class="field">
+              <input class="form-control" id="city" name="city" value="{{ form.city }}" required>
+              <div class="error"></div>
+            </div>
           </div>
           <div class="col-6 mb-3">
             <label class="form-label" for="pincode">Pincode</label>
-            <input class="form-control" id="pincode" name="pincode" value="{{ form.pincode }}" required>
+            <div class="field">
+              <input class="form-control" id="pincode" name="pincode" value="{{ form.pincode }}" required>
+              <div class="error"></div>
+            </div>
           </div>
         </div>
 
         <p class="eyebrow">Payment</p>
         <div class="form-check mb-3">
-          <input class="form-check-input" type="radio" name="payment" id="cod" checked>
+          <input class="form-check-input" type="radio" name="payment" id="cod" value="COD" checked>
           <label class="form-check-label" for="cod">Cash on Delivery</label>
         </div>
 
@@ -79,4 +127,99 @@
 
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const form = document.querySelector('#form');
+  const fullName = document.querySelector('#full_name');
+  const phone = document.querySelector('#phone');
+  const address = document.querySelector('#address');
+  const city = document.querySelector('#city');
+  const pincode = document.querySelector('#pincode');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (validateInputs()) {
+      form.submit();
+    }
+  });
+
+  function validateInputs() {
+    let valid = true;
+
+    const fn = fullName.value.trim();
+    const ph = phone.value.trim();
+    const ad = address.value.trim();
+    const ct = city.value.trim();
+    const pc = pincode.value.trim();
+
+    if (fn === '') {
+      setError(fullName, 'Full name is required');
+      valid = false;
+    } else if (fn.length < 3) {
+      setError(fullName, 'At least 3 characters');
+      valid = false;
+    } else {
+      setSuccess(fullName);
+    }
+
+    if (ph === '') {
+      setError(phone, 'Phone is required');
+      valid = false;
+    } else if (!/^[6-9]\d{9}$/.test(ph)) {
+      setError(phone, 'Enter a valid 10-digit mobile number');
+      valid = false;
+    } else {
+      setSuccess(phone);
+    }
+
+    if (ad === '') {
+      setError(address, 'Address is required');
+      valid = false;
+    } else if (ad.length < 10) {
+      setError(address, 'Enter your full address');
+      valid = false;
+    } else {
+      setSuccess(address);
+    }
+
+    if (ct === '') {
+      setError(city, 'City is required');
+      valid = false;
+    } else {
+      setSuccess(city);
+    }
+
+    if (pc === '') {
+      setError(pincode, 'Pincode is required');
+      valid = false;
+    } else if (!/^\d{6}$/.test(pc)) {
+      setError(pincode, 'Enter a 6-digit pincode');
+      valid = false;
+    } else {
+      setSuccess(pincode);
+    }
+
+    return valid;
+  }
+
+  function setError(ele, msg) {
+    const grp = ele.parentElement;
+    const err = grp.querySelector('.error');
+
+    err.innerText = msg;
+    grp.classList.add('has-error');
+    grp.classList.remove('has-success');
+  }
+
+  function setSuccess(ele) {
+    const grp = ele.parentElement;
+    const err = grp.querySelector('.error');
+
+    err.innerText = '';
+    grp.classList.add('has-success');
+    grp.classList.remove('has-error');
+  }
+</script>
 {% endblock %}

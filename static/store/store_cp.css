@@ -1,10 +1,18 @@
 
+:root {
+    --purple: #6510A8;
+    --green: #319C56;
+    --red: #E3425B;
+    --shadow: 0 5px 20px rgba(58, 17, 91, .09);
+    --shadow-hover: 0 12px 28px rgba(58, 17, 91, .16);
+}
+
 body.bg-light {
-    background-color: #f1f5f9 !important;
+    background-color: #F8F3FC !important;
 }
 
 .site-header {
-    background-color: #1e293b;
+    background-color: var(--purple);
     color: #fff;
 }
 
@@ -15,8 +23,8 @@ body.bg-light {
 
 #mainNav.offcanvas,
 #mainNav.offcanvas.show {
-    --bs-offcanvas-bg: #1e293b;
-    background: #1e293b !important;
+    --bs-offcanvas-bg: var(--purple);
+    background: var(--purple) !important;
     color: #fff;
 }
 
@@ -27,19 +35,19 @@ body.bg-light {
 }
 
 .icon {
-    color: #1e293b;
+    color: var(--purple);
     font-size: 1.1em;
     vertical-align: -0.1em;
 }
 
 
 .new-cat {
-    color: #1e293b;
-    border-color: #1e293b !important;
+    color: var(--purple);
+    border-color: var(--purple) !important;
 }
 
 .new-cat:hover {
-    background: #1e293b;
+    background: var(--purple);
     color: #fff;
 }
 
@@ -49,40 +57,56 @@ body.bg-light {
 
 
 .site-header {
-    background-color: #1E293B;
+    background-color: var(--purple);
 }
 
 
 .card {
-    border: 1px solid #E2E8F0;
+    border: 1px solid rgba(42, 11, 77, .14);
     border-radius: 12px;
 }
 
 .card h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1E293B;
+    color: var(--purple);
 }
 
 
 .form-label {
     font-weight: 500;
-    color: #1E293B;
+    color: var(--purple);
 }
 
 .form-control:focus,
 .form-select:focus {
-    border-color: #1e293b;
-    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+    border-color: var(--purple);
+    box-shadow: var(--shadow);
 }
 
 
 .btn-success {
-    background-color: #1e293b;
-    border-color: #1e293b;
+    background-color: var(--green);
+    border-color: var(--green);
 }
 
 .btn-success:hover {
-    background-color: #537df0;
-    border-color: #1D4ED8;
+    background-color: var(--purple);
+    border-color: var(--purple);
+}
+
+.btn-danger {
+    background-color: var(--red);
+    border-color: var(--red);
+}
+
+.btn-outline-danger {
+    color: var(--red);
+    border-color: var(--red);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--red);
+    border-color: var(--red);
+    color: #fff;
 }

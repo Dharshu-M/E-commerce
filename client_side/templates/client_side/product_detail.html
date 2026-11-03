@@ -4,20 +4,22 @@
 
 {% block content %}
 <style>
-  .detail-image { position: relative ; }
+  .detail-image {
+    position: relative;
+  }
 
   .detail-image .wish-btn {
-    position: absolute ;
-    top: 14px ;
-    right: 14px ;
-    z-index: 10 ;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 10;
     width: 42px;
     height: 42px;
     border: 0;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
-    display: flex ;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
@@ -25,23 +27,28 @@
     cursor: pointer;
   }
 
-  .detail-image .wish-btn .bi-heart-fill { color: #e0245e; }
+  .detail-image .wish-btn .bi-heart-fill {
+    color: #e0245e;
+  }
 </style>
-<div class="container page">
 
+<div class="container page">
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'client_home' %}">Shop</a></li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'client_home' %}">Shop</a>
+      </li>
       <li class="breadcrumb-item">{{ product.category.name }}</li>
-      <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+      <li class="breadcrumb-item active" aria-current="page">
+        {{ product.name }}
+      </li>
     </ol>
   </nav>
 
   <div class="detail-grid">
-
     <div class="detail-image">
       {% if product.image %}
-        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
       {% else %}
         <div class="product-placeholder">m.</div>
       {% endif %}
@@ -51,9 +58,20 @@
       {% elif product.trending %}
         <span class="tag tag-green">Trending</span>
       {% endif %}
-      <button class="wish-btn" type="button" id="wishBtn" onclick="toggleWishlist()" aria-label="Add to wishlist">
-    <i class="bi {% if in_wishlist %}bi-heart-fill{% else %}bi-heart{% endif %}" id="wishIcon"></i>
-  </button>
+
+      <form method="post" action="{% url 'toggle_wishlist' %}">
+        {% csrf_token %}
+        <input type="hidden" name="pid" value="{{ product.id }}">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button
+          class="wish-btn"
+          type="submit"
+          aria-label="{% if in_wishlist %}Remove from{% else %}Add to{% endif %} wishlist"
+          aria-pressed="{% if in_wishlist %}true{% else %}false{% endif %}"
+        >
+          <i class="bi {% if in_wishlist %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+        </button>
+      </form>
     </div>
 
     <div class="detail-panel">
@@ -62,7 +80,9 @@
 
       <p class="detail-price">
         ₹{{ product.price }}
-        {% if product.org_price > product.price %}<del>₹{{ product.org_price }}</del>{% endif %}
+        {% if product.org_price > product.price %}
+          <del>₹{{ product.org_price }}</del>
+        {% endif %}
       </p>
 
       {% if product.vendor %}
@@ -73,19 +93,16 @@
         <p class="detail-text">{{ product.description|linebreaksbr }}</p>
       {% endif %}
 
-      <hr>
+      <hr />
 
-      <input type="hidden" value="{{ product.id }}" id="pid">
+      <input type="hidden" value="{{ product.id }}" id="pid" />
 
       {% if product.stock == 0 %}
         <p class="stock">Sold out</p>
-        <button class="btn btn-store btn-wide" type="button" disabled>Currently unavailable</button>
+        <button class="btn btn-store btn-wide" type="button" disabled>
+          Currently unavailable
+        </button>
 
-        <div class="actions mt-2">
-          <button class="btn btn-outline-dark btn-wide" type="button" onclick="toggleWishlist()">
-            <i class="bi {% if in_wishlist %}bi-heart-fill{% else %}bi-heart{% endif %}" id="wishIcon"></i> Wishlist
-          </button>
-        </div>
       {% else %}
         <p class="stock">
           {% if product.stock <= 5 %}
@@ -98,18 +115,34 @@
         <label class="eyebrow qty-label" for="qty">Quantity</label>
         <div class="qty-box">
           <button type="button" aria-label="Decrease" onclick="minus()">-</button>
-          <input type="number" id="qty" value="1" min="1" max="{{ product.stock }}" readonly>
+          <input
+            type="number"
+            id="qty"
+            value="1"
+            min="1"
+            max="{{ product.stock }}"
+            readonly
+          />
           <button type="button" aria-label="Increase" onclick="plus()">+</button>
         </div>
 
         <div class="actions">
-          <button class="btn btn-store btn-wide" type="button" id="addToCart" onclick="addTocart(true)">
+          <button
+            class="btn btn-store btn-wide"
+            type="button"
+            id="addToCart"
+            onclick="addTocart(true)"
+          >
             <i class="bi bi-cart-plus"></i> Add to cart
           </button>
-          <button class="btn btn-dark-store btn-wide" type="button" id="buyNow" onclick="buy(true)">
+          <button
+            class="btn btn-dark-store btn-wide"
+            type="button"
+            id="buyNow"
+            onclick="buy(true)"
+          >
             <i class="bi bi-lightning-charge"></i> Buy now
           </button>
-          
         </div>
 
         <ul class="perks">
@@ -128,12 +161,21 @@
         {% for item in related_products %}
           <div class="product-card">
             {% if item.image %}
-              <img class="related-image" src="{{ item.image.url }}" alt="{{ item.name }}">
+              <img
+                class="related-image"
+                src="{{ item.image.url }}"
+                alt="{{ item.name }}"
+              />
             {% else %}
               <div class="related-image product-placeholder">m.</div>
             {% endif %}
+
             <div class="card-info">
-              <h3 class="product-name"><a class="stretch" href="{% url 'product_detail' item.slug %}">{{ item.name }}</a></h3>
+              <h3 class="product-name">
+                <a class="stretch" href="{% url 'product_detail' item.slug %}">
+                  {{ item.name }}
+                </a>
+              </h3>
               <span class="price">₹{{ item.price }}</span>
             </div>
           </div>
@@ -141,7 +183,20 @@
       </div>
     </section>
   {% endif %}
+</div>
 
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x   p-3">
+  <div id="myToast" class="toast text-bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg"></div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -152,11 +207,11 @@
   const tkn = "{{ csrf_token }}";
 
   function plus() {
-    if ( +qty.value < +qty.max) qty.value++;
+    if (+qty.value < +qty.max) qty.value++;
   }
 
   function minus() {
-    if ( +qty.value > 1) qty.value--;
+    if (+qty.value > 1) qty.value--;
   }
 
   function addTocart(goToCart) {
@@ -179,83 +234,62 @@
         },
         body: JSON.stringify(postObj)
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          if (goToCart) {
-            window.location.href = "{% url 'cart_detail' %}";
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            if (goToCart) {
+              window.location.href = "{% url 'cart_detail' %}";
+            } else {
+              document.getElementById("toastMsg").textContent = "Added to cart";
+              new bootstrap.Toast(document.getElementById("myToast")).show();
+            }
           } else {
-            alert("Added to cart");
+            document.getElementById("toastMsg").textContent = "Login To AddToCard";
+            new bootstrap.Toast(document.getElementById("myToast")).show();
           }
-        } else {
-          alert(data.status);
-        }
-      })
-      .catch(() => alert("Something went wrong. Please try again."));
+        })
+        .catch(() => alert("Something went wrong. Please try again."));
     } else {
       alert("Please Enter The Quantity");
     }
   }
 
-  function toggleWishlist() {
-    fetch("{% url 'toggle_wishlist' %}", {
+  function buy(gotoorder) {
+    let q = parseInt(qty.value, 10);
+    q = isNaN(q) ? 0 : q;
+
+    if (q <= 0) {
+      alert("Please Enter The Quantity");
+      return;
+    }
+
+    let postObj = {
+      product_qty: q,
+      pid: pid.value,
+      token: tkn
+    };
+
+    fetch("{% url 'add_to_cart' %}", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": tkn,
         "X-Requested-With": "XMLHttpRequest"
       },
-      body: JSON.stringify({ pid: pid.value })
+      body: JSON.stringify(postObj)
     })
-    .then(res => res.json())
-    .then(data => {
-      const icon = document.getElementById("wishIcon");
-      if (data.status === "added") {
-        icon.className = "bi bi-heart-fill";
-      } else if (data.status === "removed") {
-        icon.className = "bi bi-heart";
-      } else {
-        alert(data.status);
-      }
-    })
-    .catch(() => alert("Something went wrong. Please try again."));
-  }
-  
-function buy(gotoorder) {
-    let q = parseInt(qty.value, 10);
-    q = isNaN(q) ? 0 : q;
-
-    if (q <= 0) {
-        alert("Please Enter The Quantity");
-        return;
-    }
-
-    let postObj = {
-        product_qty: q,
-        pid: pid.value,
-        token: tkn
-    };
-
-    fetch("{% url 'add_to_cart' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": tkn,
-            "X-Requested-With": "XMLHttpRequest"
-        },
-        body: JSON.stringify(postObj)
-    })
-    .then(res => res.json())
-    .then(data => {
+      .then(res => res.json())
+      .then(data => {
         if (data.status === "success") {
-            window.location.href = "{% url 'checkout' %}";
+          window.location.href = "{% url 'checkout' %}";
         } else {
-            alert(data.status);
+             document.getElementById("toastMsg").textContent = "Login To Purchase";
+            new bootstrap.Toast(document.getElementById("myToast")).show();
         }
-    })
-    .catch(() => {
+      })
+      .catch(() => {
         alert("Something went wrong. Please try again.");
-    });
-}
+      });
+  }
 </script>
 {% endblock %}

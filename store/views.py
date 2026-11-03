@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import logout
+from django.utils.http import url_has_allowed_host_and_scheme
 
 # Create your views here.
 
@@ -153,24 +154,18 @@ def cart_remove(request, item_id):
 
 @require_POST
 def toggleWishlist(request):
-    if request.user.is_authenticated:
-        data = json.load(request)
-        pid = data['pid']
-        print(pid)
+    next_url = request.POST.get('next', '')
+    if not request.user.is_authenticated:
+        return redirect('login')
 
-        product = Product.objects.filter(id=pid, is_active=True).first()
-        if not product:
-            return JsonResponse({'status': 'Product not found'})
+    product = Product.objects.filter(id=request.POST.get('pid'), is_active=True).first()
+    if not product:
+        return redirect(next_url if url_has_allowed_host_and_scheme(next_url, {request.get_host()}) else 'client_home')
 
-        item, created = Wishlist.objects.get_or_create(user=request.user, product=product)
-
-        if created:
-            return JsonResponse({'status': 'added'})
-
+    item, created = Wishlist.objects.get_or_create(user=request.user, product=product)
+    if not created:
         item.delete()
-        return JsonResponse({'status': 'removed'})
-    else:
-        return JsonResponse({'status': 'Login to use wishlist'})
+    return redirect(next_url if url_has_allowed_host_and_scheme(next_url, {request.get_host()}) else 'client_home')
 
 @login_required
 def wishlist_detail(request):
@@ -196,7 +191,18 @@ def checkout(request):
         return redirect("cart_detail")
 
     total = sum(i.subtotal for i in items)
-    ctx = {"items": items, "total": total}
+    previous_order = Order.objects.filter(user=request.user).order_by("-created_at").first()
+    ctx = {
+        "items": items,
+        "total": total,
+        "form": {
+            "full_name": previous_order.full_name if previous_order else "",
+            "phone": previous_order.phone if previous_order else "",
+            "address": previous_order.address if previous_order else "",
+            "city": previous_order.city if previous_order else "",
+            "pincode": previous_order.pincode if previous_order else "",
+        },
+    }
 
     if request.method == "POST":
         full_name = request.POST.get("full_name", "").strip()

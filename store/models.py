@@ -4,6 +4,7 @@ from django.utils.text import slugify
 import datetime
 import os
 from credential.models import Registration
+from django.core.exceptions import ValidationError
 
 def getfilename(instance,filename):
     now_time=datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -13,7 +14,13 @@ def getfilename(instance,filename):
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(unique=True, blank=True)
-
+    
+    def clean(self):
+        self.name = self.name.strip()
+        qs = Category.objects.filter(name__iexact=self.name).exclude(pk=self.pk)
+        if qs.exists():
+            raise ValidationError({"name": "A category with this name already exists."})
+        
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
