@@ -11,7 +11,9 @@ from django.utils.http import url_has_allowed_host_and_scheme
 # Create your views here.
 
 def base(request):
-    return render(request,'base.html')
+    products = Product.objects.select_related("category")
+    
+    return render(request,'base.html',{"products":products})
 
 def owner_home(request):
     products = Product.objects.select_related('category')
